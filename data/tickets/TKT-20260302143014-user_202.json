@@ -1,0 +1,10 @@
+{
+  "ticket_id": "TKT-20260302143014-user_202",
+  "user_id": "user_20260302",
+  "issue": "Multiple inquiries: my name is anas | i want to order a credit card | yes",
+  "priority": "medium",
+  "status": "open",
+  "created_at": "2026-03-02T14:30:14.708751",
+  "assigned_to": "support_team",
+  "estimated_response_time": "1-2 business days"
+}

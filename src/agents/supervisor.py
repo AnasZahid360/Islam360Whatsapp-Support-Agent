@@ -1,0 +1,132 @@
+"""
+Supervisor agent - The orchestrator of the multi-agent system.
+
+The Supervisor analyzes user queries and routes to the appropriate agent
+using the Command pattern. It considers sentiment, conversation history,
+and retrieval success to make routing decisions.
+"""
+
+from typing import Literal
+from langchain_core.messages import HumanMessage, SystemMessage
+from langgraph.types import Command
+from src.state import AgentState
+from src.models import get_model
+from src.utils.prompts import get_supervisor_prompt, detect_sentiment
+
+
+def supervisor_node(state: AgentState) -> Command[Literal["retriever_agent", "escalator_agent", "greeting_agent", "__end__"]]:
+    """
+    Supervisor node that routes to the appropriate agent.
+    
+    This is the brain of the system. It analyzes the conversation
+    and decides whether to:
+    - Route to retriever_agent for knowledge base lookup
+    - Route to escalator_agent for human support
+    - End the conversation
+    
+    Args:
+        state: Current agent state
+    
+    Returns:
+        Command object with routing decision
+    """
+    # Detect user sentiment from messages
+    sentiment = detect_sentiment(state["messages"])
+    
+    # Get the appropriate prompt based on sentiment
+    prompt = get_supervisor_prompt(sentiment)
+    
+    # Get the model
+    model = get_model(state["config"])
+    
+    # Prepare prompt variables
+    summary = state.get("summary", "No previous context")
+    
+    # 1. Handle explicit escalation flags
+    # If an escalation is already proposed, we MUST go to escalator_agent to handle user response
+    if state.get("escalation_status") == "proposed":
+        return Command(goto="escalator_agent")
+        
+    # If the retriever or guardrail flagged for escalation, and it hasn't been declined yet
+    if state.get("needs_escalation", False) and state.get("escalation_status") != "declined":
+        # Reset the flag so we don't loop, but the escalator node will handle the 'proposed' status
+        return Command(
+            goto="escalator_agent",
+            update={"needs_escalation": False}
+        )
+        
+    # 2. Detect direct request for human/support or confirmation
+    if state["messages"]:
+        last_msg = str(state["messages"][-1].content).lower().strip()
+        human_keywords = ["human", "representative", "person", "support team", "customer service"]
+        
+        # Check for direct request
+        if any(keyword in last_msg for keyword in human_keywords):
+            return Command(
+                goto="escalator_agent",
+                update={"is_direct_escalation": True}
+            )
+            
+        # Check for simple confirmation "yes/no" if the previous message was from AI
+        if len(state["messages"]) >= 2:
+            prev_msg = state["messages"][-2]
+            if prev_msg.type == "ai":
+                # Multi-word confirmation handling
+                yes_words = ["yes", "yep", "sure", "ok", "okay", "y", "yeah", "please", "do it"]
+                no_words = ["no", "nope", "n", "don't", "stop", "wait"]
+                
+                is_yes = any(word in last_msg for word in yes_words)
+                is_no = any(word in last_msg for word in no_words)
+                
+                if is_yes or is_no:
+                    # If AI proposed something (like a ticket or support help), go to escalator_agent
+                    # We check for broader keywords to catch RAG-based support offers too.
+                    prev_content = prev_msg.content.lower()
+                    support_offer_keywords = [
+                        "ticket", "representative", "support", "help you with", 
+                        "billing", "refund", "confirm", "okay with you", "is that okay"
+                    ]
+                    
+                    if any(word in prev_content for word in support_offer_keywords):
+                        # Reset escalation_status to proposed if it was None/Declined so escalator handles it
+                        return Command(
+                            goto="escalator_agent",
+                            update={"escalation_status": "proposed"} 
+                        )
+    
+    # If relevance score is very low from previous retrieval, escalate
+    # Only check if retrieved_docs is populated (meaning a search was actually done)
+    if state.get("retrieved_docs") and state.get("relevance_score", 1.0) < 0.3:
+        if state.get("escalation_status") != "declined":
+            return Command(goto="escalator_agent")
+    
+    # Build messages for the LLM using format_messages for robustness
+    messages = prompt.format_messages(
+        summary=summary,
+        sentiment=sentiment,
+        messages=state["messages"]
+    )
+    
+    # Ask LLM for routing decision
+    response = model.invoke(messages)
+    decision = response.content.strip().lower()
+    
+    # Parse the decision
+    decision_text = decision.lower()
+    
+    # Check for thanks/bye explicitly in case LLM missed it
+    thanks_keywords = ["thanks", "thank you", "bye", "goodbye", "thx"]
+    if any(word in last_msg for word in thanks_keywords):
+        return Command(goto="greeting_agent")
+        
+    if "greeting" in decision_text:
+        return Command(goto="greeting_agent")
+    elif "retriever" in decision_text or "retrieve" in decision_text:
+        return Command(goto="retriever_agent")
+    elif "escalat" in decision_text:
+        return Command(goto="escalator_agent")
+    elif "end" in decision_text:
+        return Command(goto="__end__")
+    else:
+        # Default to retriever if unclear
+        return Command(goto="retriever_agent")

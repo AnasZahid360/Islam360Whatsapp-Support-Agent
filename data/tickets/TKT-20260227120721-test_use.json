@@ -1,0 +1,10 @@
+{
+  "ticket_id": "TKT-20260227120721-test_use",
+  "user_id": "test_user",
+  "issue": "Multiple inquiries: i want to return my package | yes please",
+  "priority": "medium",
+  "status": "open",
+  "created_at": "2026-02-27T12:07:21.044353",
+  "assigned_to": "support_team",
+  "estimated_response_time": "1-2 business days"
+}

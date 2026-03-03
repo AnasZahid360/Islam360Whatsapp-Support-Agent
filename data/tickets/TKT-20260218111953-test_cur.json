@@ -1,0 +1,10 @@
+{
+  "ticket_id": "TKT-20260218111953-test_cur",
+  "user_id": "test_curl",
+  "issue": "Multiple inquiries: hello | Please regenerate your response. IMPORTANT: Only use information from the provided context. Previous issue: FAIL\n\nThe generated answer contains information not present in the source documents. The answer is a greeting and an open-ended question, which is not supported by any of the source documents. The sources only provide information about MakTek's features, integrations, security, and support channels, but do not include a generic customer support greeting or a question asking how to assist the customer. | Please regenerate your response. IMPORTANT: Only use information from the provided context. Previous issue: FAIL\n\nThe generated answer is too vague and does not directly reference any specific information from the source documents. It does mention some general topics (integrations, support, data export, and security) but does not provide any concrete details or direct quotes from the sources.",
+  "priority": "medium",
+  "status": "open",
+  "created_at": "2026-02-18T11:19:53.859871",
+  "assigned_to": "support_team",
+  "estimated_response_time": "1-2 business days"
+}

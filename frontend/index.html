@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MakTek Support | AI Assistant</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="./style.css" />
+</head>
+<body>
+    <div id="app">
+        <header class="navbar">
+            <div class="logo">
+                <span class="logo-icon">M</span>
+                <span class="logo-text">MakTek</span>
+            </div>
+            <div class="nav-links">
+                <span class="status-indicator">
+                    <span class="status-dot"></span>
+                    AI System: Online
+                </span>
+            </div>
+        </header>
+
+        <main class="chat-container">
+            <div class="chat-window" id="chat-window">
+                <div class="welcome-section">
+                    <h1>How can we help today?</h1>
+                    <p>Our intelligent agent is ready to assist with returns, shipping, and more.</p>
+                </div>
+                <div class="messages" id="chat-messages">
+                    <!-- Messages will appear here -->
+                </div>
+            </div>
+
+            <div class="input-area">
+                <form id="chat-form">
+                    <input 
+                        type="text" 
+                        id="user-input" 
+                        placeholder="Type your message..." 
+                        autocomplete="off"
+                        required
+                    />
+                    <button type="submit" id="send-btn">
+                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M22 2L11 13" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M22 2L15 22L11 13L2 9L22 2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </button>
+                </form>
+            </div>
+        </main>
+
+        <aside class="sidebar" id="ticket-sidebar">
+            <h3>Active Tickets</h3>
+            <div id="ticket-list" class="ticket-list">
+                <p class="no-tickets">No active tickets.</p>
+            </div>
+            
+            <div class="sidebar-footer">
+                <div class="user-info">
+                    <div class="avatar" id="user-avatar">?</div>
+                    <div class="user-details">
+                        <p class="user-name" id="display-user-id">Guest User</p>
+                        <p class="user-status">Interactive Session</p>
+                    </div>
+                </div>
+            </div>
+        </aside>
+    </div>
+    <script type="module" src="/main.js"></script>
+</body>
+</html>

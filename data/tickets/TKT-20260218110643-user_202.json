@@ -1,0 +1,10 @@
+{
+  "ticket_id": "TKT-20260218110643-user_202",
+  "user_id": "user_20260218",
+  "issue": "Multiple inquiries: hello | my package was damaged during shipping what are your protocols",
+  "priority": "medium",
+  "status": "open",
+  "created_at": "2026-02-18T11:06:43.550166",
+  "assigned_to": "support_team",
+  "estimated_response_time": "1-2 business days"
+}
