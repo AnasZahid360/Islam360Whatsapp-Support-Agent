@@ -42,6 +42,12 @@ def supervisor_node(state: AgentState) -> Command[Literal["retriever_agent", "es
     # Prepare prompt variables
     summary = state.get("summary", "No previous context")
     
+    # 0. Check if turn is complete
+    # If the last message is from the AI, the conversation turn is complete.
+    # We should return to the user.
+    if state["messages"] and state["messages"][-1].type == "ai":
+        return Command(goto="__end__")
+        
     # 1. Handle explicit escalation flags
     # If an escalation is already proposed, we MUST go to escalator_agent to handle user response
     if state.get("escalation_status") == "proposed":
@@ -71,12 +77,13 @@ def supervisor_node(state: AgentState) -> Command[Literal["retriever_agent", "es
         if len(state["messages"]) >= 2:
             prev_msg = state["messages"][-2]
             if prev_msg.type == "ai":
-                # Multi-word confirmation handling
-                yes_words = ["yes", "yep", "sure", "ok", "okay", "y", "yeah", "please", "do it"]
-                no_words = ["no", "nope", "n", "don't", "stop", "wait"]
+                import re
+                # Multi-word confirmation handling with word boundaries
+                yes_words = [r"yes", r"yep", r"sure", r"ok", r"okay", r"y", r"yeah", r"please", r"do it"]
+                no_words = [r"no", r"nope", r"n", r"don't", r"stop", r"wait"]
                 
-                is_yes = any(word in last_msg for word in yes_words)
-                is_no = any(word in last_msg for word in no_words)
+                is_yes = any(re.search(rf"\b{word}\b", last_msg) for word in yes_words)
+                is_no = any(re.search(rf"\b{word}\b", last_msg) for word in no_words)
                 
                 if is_yes or is_no:
                     # If AI proposed something (like a ticket or support help), go to escalator_agent
@@ -88,11 +95,12 @@ def supervisor_node(state: AgentState) -> Command[Literal["retriever_agent", "es
                     ]
                     
                     if any(word in prev_content for word in support_offer_keywords):
-                        # Reset escalation_status to proposed if it was None/Declined so escalator handles it
-                        return Command(
-                            goto="escalator_agent",
-                            update={"escalation_status": "proposed"} 
-                        )
+                        # Don't loop if we just handled this state
+                        if state.get("escalation_status") not in ["declined", "confirmed", "proposed"]:
+                            return Command(
+                                goto="escalator_agent",
+                                update={"escalation_status": "proposed"} 
+                            )
     
     # If relevance score is very low from previous retrieval, escalate
     # Only check if retrieved_docs is populated (meaning a search was actually done)

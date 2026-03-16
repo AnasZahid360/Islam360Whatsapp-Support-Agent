@@ -1,5 +1,6 @@
 /**
  * MakTek Support Chatbot - Frontend Logic
+ * Supports both text chat and voice messages.
  */
 
 const API_BASE_URL = 'http://127.0.0.1:8000';
@@ -12,9 +13,19 @@ class ChatApp {
         this.ticketList = document.getElementById('ticket-list');
         this.displayUserId = document.getElementById('display-user-id');
         this.chatWindow = document.getElementById('chat-window');
+        this.micBtn = document.getElementById('mic-btn');
+        this.voiceStatus = document.getElementById('voice-status');
+        this.voiceStatusText = document.getElementById('voice-status-text');
 
         this.userId = this.getOrGenerateId('maktek_user_id', 'user_');
         this.threadId = this.getOrGenerateId('maktek_thread_id', 'thread_' + Date.now() + '_');
+
+        // Voice recording state
+        this.isRecording = false;
+        this.mediaRecorder = null;
+        this.audioChunks = [];
+        this.recordingTimer = null;
+        this.recordingSeconds = 0;
 
         this.init();
     }
@@ -32,11 +43,16 @@ class ChatApp {
         this.displayUserId.textContent = this.userId;
         this.chatForm.addEventListener('submit', (e) => this.handleSubmit(e));
 
+        // Voice recording — click to toggle
+        this.micBtn.addEventListener('click', () => this.toggleRecording());
+
         // Initial welcome message
         setTimeout(() => {
-            this.addMessage("Hello! I'm your MakTek Support Assistant. How can I help you today?", 'ai');
+            this.addMessage("Hello! I'm your MakTek Support Assistant. How can I help you today? You can type or tap the 🎙️ mic button to ask with your voice.", 'ai');
         }, 1000);
     }
+
+    // ─── Text Chat ───────────────────────────────────────────
 
     async handleSubmit(e) {
         e.preventDefault();
@@ -65,7 +81,6 @@ class ChatApp {
             this.removeTypingIndicator(typingId);
             this.addMessage(data.response, 'ai');
 
-            // Handle tickets if present in docs or response text
             this.scanForTickets(data.response, data.docs);
 
         } catch (error) {
@@ -75,11 +90,143 @@ class ChatApp {
         }
     }
 
+    // ─── Voice Recording ─────────────────────────────────────
+
+    async toggleRecording() {
+        if (this.isRecording) {
+            this.stopRecording();
+        } else {
+            await this.startRecording();
+        }
+    }
+
+    async startRecording() {
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+
+            this.audioChunks = [];
+            this.mediaRecorder = new MediaRecorder(stream, { mimeType: 'audio/webm' });
+
+            this.mediaRecorder.ondataavailable = (e) => {
+                if (e.data.size > 0) {
+                    this.audioChunks.push(e.data);
+                }
+            };
+
+            this.mediaRecorder.onstop = () => {
+                // Stop all tracks to release the microphone
+                stream.getTracks().forEach(track => track.stop());
+                this.handleRecordingComplete();
+            };
+
+            this.mediaRecorder.start();
+            this.isRecording = true;
+            this.recordingSeconds = 0;
+
+            // UI updates
+            this.micBtn.classList.add('recording');
+            this.voiceStatus.style.display = 'flex';
+            this.voiceStatusText.textContent = 'Recording... 0s';
+
+            // Timer
+            this.recordingTimer = setInterval(() => {
+                this.recordingSeconds++;
+                this.voiceStatusText.textContent = `Recording... ${this.recordingSeconds}s`;
+
+                // Auto-stop after 60 seconds
+                if (this.recordingSeconds >= 60) {
+                    this.stopRecording();
+                }
+            }, 1000);
+
+        } catch (err) {
+            console.error('Microphone access error:', err);
+            this.addMessage('⚠️ Could not access microphone. Please allow microphone permissions and try again.', 'ai');
+        }
+    }
+
+    stopRecording() {
+        if (this.mediaRecorder && this.mediaRecorder.state === 'recording') {
+            this.mediaRecorder.stop();
+        }
+
+        this.isRecording = false;
+        this.micBtn.classList.remove('recording');
+
+        if (this.recordingTimer) {
+            clearInterval(this.recordingTimer);
+            this.recordingTimer = null;
+        }
+    }
+
+    async handleRecordingComplete() {
+        if (this.audioChunks.length === 0) {
+            this.voiceStatus.style.display = 'none';
+            return;
+        }
+
+        const audioBlob = new Blob(this.audioChunks, { type: 'audio/webm' });
+
+        // Show user that voice message was sent
+        this.addMessage(`🎙️ Voice message (${this.recordingSeconds}s)`, 'user');
+
+        // Update status
+        this.voiceStatusText.textContent = 'Transcribing...';
+
+        const typingId = this.addTypingIndicator();
+
+        try {
+            const formData = new FormData();
+            formData.append('audio', audioBlob, 'voice_message.webm');
+            formData.append('user_id', this.userId);
+            formData.append('thread_id', this.threadId);
+
+            const response = await fetch(`${API_BASE_URL}/voice-chat`, {
+                method: 'POST',
+                body: formData
+            });
+
+            if (!response.ok) {
+                const errData = await response.json().catch(() => ({}));
+                throw new Error(errData.detail || 'Voice chat request failed');
+            }
+
+            const data = await response.json();
+            this.removeTypingIndicator(typingId);
+            this.voiceStatus.style.display = 'none';
+
+            // Show transcription as a subtle note
+            if (data.transcription) {
+                this.addTranscriptionNote(data.transcription, data.language_detected);
+            }
+
+            // Show the chatbot response
+            this.addMessage(data.response, 'ai');
+
+            this.scanForTickets(data.response);
+
+        } catch (error) {
+            console.error('Voice chat error:', error);
+            this.removeTypingIndicator(typingId);
+            this.voiceStatus.style.display = 'none';
+            this.addMessage(`⚠️ Voice processing failed: ${error.message}. Please try again or type your question.`, 'ai');
+        }
+    }
+
+    addTranscriptionNote(text, lang) {
+        const noteDiv = document.createElement('div');
+        noteDiv.className = 'transcription-note';
+        noteDiv.innerHTML = `<span class="transcription-label">📝 Heard:</span> "${text}" <span class="transcription-lang">(${lang})</span>`;
+        this.messagesContainer.appendChild(noteDiv);
+        this.scrollToBottom();
+    }
+
+    // ─── Shared UI Helpers ───────────────────────────────────
+
     addMessage(text, sender) {
         const msgDiv = document.createElement('div');
         msgDiv.className = `message ${sender}`;
 
-        // Simple markdown-ish bolding
         const formattedText = text
             .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
             .replace(/\n/g, '<br>');
@@ -110,7 +257,6 @@ class ChatApp {
     }
 
     scrollToBottom() {
-        // Use a slight delay to ensure the DOM has updated and element heights are correct
         setTimeout(() => {
             this.chatWindow.scrollTo({
                 top: this.chatWindow.scrollHeight,
@@ -120,7 +266,6 @@ class ChatApp {
     }
 
     scanForTickets(responseText, docs) {
-        // Regex to find ticket IDs like TKT-20260218110353-test_use
         const ticketRegex = /TKT-[0-9a-fA-Z-]+/g;
         const matches = responseText.match(ticketRegex);
 
@@ -132,7 +277,6 @@ class ChatApp {
     }
 
     addTicketToSidebar(ticketId) {
-        // Prevent duplicates
         if (document.getElementById(`ticket-${ticketId}`)) return;
 
         if (this.ticketList.querySelector('.no-tickets')) {

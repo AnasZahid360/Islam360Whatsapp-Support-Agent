@@ -212,6 +212,8 @@ body {
   display: flex;
   flex-direction: column;
   position: relative;
+  overflow: hidden;
+  /* CRITICAL: Prevents container from expanding beyond grid cell */
   background-image:
     radial-gradient(at 0% 0%, rgba(0, 112, 243, 0.05) 0px, transparent 50%),
     radial-gradient(at 100% 100%, rgba(0, 198, 255, 0.05) 0px, transparent 50%);
@@ -409,6 +411,113 @@ body {
   padding: 2px 6px;
   border-radius: 4px;
   font-family: monospace;
+}
+
+/* Mic Button */
+#mic-btn {
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--text-muted);
+  border: 1px solid var(--border);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  margin-right: 8px;
+}
+
+#mic-btn:hover {
+  color: var(--text-main);
+  border-color: var(--primary);
+  background: rgba(0, 112, 243, 0.1);
+}
+
+#mic-btn svg {
+  width: 20px;
+  height: 20px;
+}
+
+#mic-btn.recording {
+  background: rgba(255, 59, 48, 0.15);
+  border-color: #ff3b30;
+  color: #ff3b30;
+  animation: micPulse 1.5s infinite ease-in-out;
+}
+
+@keyframes micPulse {
+
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(255, 59, 48, 0.4);
+  }
+
+  50% {
+    box-shadow: 0 0 0 10px rgba(255, 59, 48, 0);
+  }
+}
+
+/* Voice Status Bar */
+.voice-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  max-width: 800px;
+  margin: 0 auto 10px;
+  padding: 8px 16px;
+  background: rgba(255, 59, 48, 0.08);
+  border: 1px solid rgba(255, 59, 48, 0.2);
+  border-radius: 12px;
+  font-size: 13px;
+  color: #ff6b6b;
+  animation: fadeIn 0.3s ease-out;
+}
+
+.voice-status-dot {
+  width: 8px;
+  height: 8px;
+  min-width: 8px;
+  background: #ff3b30;
+  border-radius: 50%;
+  animation: blink 1s infinite;
+}
+
+@keyframes blink {
+
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.3;
+  }
+}
+
+/* Transcription Note */
+.transcription-note {
+  font-size: 12px;
+  color: var(--text-muted);
+  padding: 6px 14px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  max-width: 85%;
+  align-self: flex-start;
+  animation: fadeIn 0.3s ease-out;
+}
+
+.transcription-label {
+  color: var(--primary);
+  font-weight: 600;
+}
+
+.transcription-lang {
+  opacity: 0.6;
+  font-size: 11px;
 }
 
 .typing-indicator {

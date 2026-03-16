@@ -30,6 +30,9 @@ fastapi
 uvicorn
 python-multipart
 
+# Voice / Speech-to-Text
+faster-whisper>=1.0.0
+
 # Optional: Development & Testing
 pytest>=7.4.0
 pytest-asyncio>=0.21.0

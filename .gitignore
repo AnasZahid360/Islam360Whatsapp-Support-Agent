@@ -33,6 +33,8 @@ wheels/
 data/vector_store/
 *.faiss
 *.pkl
+*.npy
+*.pt
 
 # Logs
 *.log

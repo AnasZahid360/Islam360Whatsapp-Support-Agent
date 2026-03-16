@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -9,6 +10,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="./style.css" />
 </head>
+
 <body>
     <div id="app">
         <header class="navbar">
@@ -36,18 +38,30 @@
             </div>
 
             <div class="input-area">
+                <div class="voice-status" id="voice-status" style="display: none;">
+                    <span class="voice-status-dot"></span>
+                    <span class="voice-status-text" id="voice-status-text">Recording...</span>
+                </div>
                 <form id="chat-form">
-                    <input 
-                        type="text" 
-                        id="user-input" 
-                        placeholder="Type your message..." 
-                        autocomplete="off"
-                        required
-                    />
+                    <input type="text" id="user-input" placeholder="Type your message..." autocomplete="off" required />
+                    <button type="button" id="mic-btn" title="Hold to record voice message">
+                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z" stroke="currentColor"
+                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                            <path d="M19 10v2a7 7 0 0 1-14 0v-2" stroke="currentColor" stroke-width="2"
+                                stroke-linecap="round" stroke-linejoin="round" />
+                            <line x1="12" y1="19" x2="12" y2="23" stroke="currentColor" stroke-width="2"
+                                stroke-linecap="round" stroke-linejoin="round" />
+                            <line x1="8" y1="23" x2="16" y2="23" stroke="currentColor" stroke-width="2"
+                                stroke-linecap="round" stroke-linejoin="round" />
+                        </svg>
+                    </button>
                     <button type="submit" id="send-btn">
                         <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M22 2L11 13" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                            <path d="M22 2L15 22L11 13L2 9L22 2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M22 2L11 13" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round" />
+                            <path d="M22 2L15 22L11 13L2 9L22 2Z" stroke="currentColor" stroke-width="2"
+                                stroke-linecap="round" stroke-linejoin="round" />
                         </svg>
                     </button>
                 </form>
@@ -59,7 +73,7 @@
             <div id="ticket-list" class="ticket-list">
                 <p class="no-tickets">No active tickets.</p>
             </div>
-            
+
             <div class="sidebar-footer">
                 <div class="user-info">
                     <div class="avatar" id="user-avatar">?</div>
@@ -73,4 +87,5 @@
     </div>
     <script type="module" src="/main.js"></script>
 </body>
+
 </html>

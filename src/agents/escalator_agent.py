@@ -48,8 +48,12 @@ async def escalator_agent_node(state: AgentState) -> Command[Literal["__end__"]]
         last_message = state["messages"][-1].content.lower()
         
         # Simple intent detection (could be improved with LLM)
-        is_yes = any(word in last_message for word in ["yes", "yep", "sure", "please", "ok", "do it"])
-        is_no = any(word in last_message for word in ["no", "nope", "don't", "stop", "wait"])
+        import re
+        yes_words = [r"yes", r"yep", r"sure", r"please", r"ok", r"do it"]
+        no_words = [r"no", r"nope", r"don't", r"stop", r"wait"]
+        
+        is_yes = any(re.search(rf"\b{word}\b", last_message) for word in yes_words)
+        is_no = any(re.search(rf"\b{word}\b", last_message) for word in no_words)
         
         # Use LLM for more robust intent detection if unclear
         if not is_yes and not is_no:
@@ -93,13 +97,26 @@ Generate an empathetic response acknowledging the ticket creation and providing 
                 }
             )
         else:
-            return Command(
-                goto="__end__",
-                update={
-                    "messages": [AIMessage(content="Understood. I'll continue to assist you as best as I can. What else would you like to know?")],
-                    "escalation_status": "declined"
-                }
-            )
+            # Check if the user's message was just a simple "no" or a new question
+            # If the user typed a longer message, they likely asked something new.
+            just_no = re.match(r'^(no|nope|don\'t|stop|wait)[^\w]*$', last_message.strip())
+            
+            if just_no:
+                return Command(
+                    goto="__end__",
+                    update={
+                        "messages": [AIMessage(content="Understood. Let me know if you need anything else.")],
+                        "escalation_status": "declined"
+                    }
+                )
+            else:
+                # User declined the ticket but asked a new question. Route back to supervisor to handle the new query.
+                return Command(
+                    goto="supervisor",
+                    update={
+                        "escalation_status": "declined"
+                    }
+                )
     
     # Fallback
     return Command(goto="__end__")
