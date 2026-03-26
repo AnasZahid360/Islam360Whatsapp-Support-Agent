@@ -1,0 +1,24 @@
+[
+  {
+    "role": "user",
+    "content": "my subscription is not working",
+    "timestamp": "2026-03-26T13:38:53.585954",
+    "message_id": "debug_t1-1774514333.585959",
+    "thread_id": "debug_t1",
+    "user_id": "debug_user",
+    "metadata": {
+      "config_overrides": null
+    }
+  },
+  {
+    "role": "assistant",
+    "content": "I'm sorry, I'm having trouble finding a definitive answer for you. Would you like me to create a support ticket so a human representative can look into this for you?",
+    "timestamp": "2026-03-26T13:38:55.436239",
+    "message_id": "debug_t1-1774514335.436244",
+    "thread_id": "debug_t1",
+    "user_id": "debug_user",
+    "metadata": {
+      "retrieved_docs_count": 5
+    }
+  }
+]

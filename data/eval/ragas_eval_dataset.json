@@ -1,0 +1,28 @@
+[
+  {
+    "question": "Can I integrate MakTek with other tools?",
+    "ground_truth": "Yes. MakTek supports integrations with many common business tools and platforms.",
+    "user_id": "ragas_eval_user",
+    "thread_id": "ragas_eval_thread_1"
+  },
+  {
+    "question": "How do I contact support for urgent issues?",
+    "ground_truth": "Urgent issues should be escalated through support with high priority and a clear issue summary.",
+    "user_id": "ragas_eval_user",
+    "thread_id": "ragas_eval_thread_2"
+  },
+  {
+    "question": "What if the answer is not in the knowledge base?",
+    "ground_truth": "The assistant should clearly state uncertainty and offer to create or escalate a support ticket.",
+    "user_id": "ragas_eval_user",
+    "thread_id": "ragas_eval_thread_3"
+  },
+  {
+    "question": "How do I escalate an urgent support issue?",
+    "answer": "For urgent issues, submit a high-priority support ticket with a clear summary of the problem. Our team will respond within 1 hour during business hours."
+  },
+  {
+    "question": "What happens if my question is not in the knowledge base?",
+    "answer": "If the assistant cannot find an answer, it will acknowledge the uncertainty and offer to create or escalate a support ticket for a human agent to handle."
+  }
+]

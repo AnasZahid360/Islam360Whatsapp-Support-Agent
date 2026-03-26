@@ -12,6 +12,7 @@ from typing import List, Optional, Dict, Any, Tuple
 from pinecone import Pinecone, ServerlessSpec
 from langchain_community.embeddings import HuggingFaceEmbeddings
 from langchain_core.documents import Document
+from .huggingface_loader import HuggingFaceDatasetLoader
 
 
 class VectorStoreManager:
@@ -21,7 +22,7 @@ class VectorStoreManager:
     
     def __init__(
         self,
-        data_path: str = "data/maktek_qa.json",
+        data_path: str = "data/.hf_cache/faqs.json",
         index_name: Optional[str] = None,
         embedding_model: str = "all-MiniLM-L6-v2"
     ):
@@ -52,15 +53,30 @@ class VectorStoreManager:
         return self.pc
 
     def load_documents(self) -> List[Document]:
-        """Load documents from JSON dataset"""
-        if not os.path.exists(self.data_path):
-            raise FileNotFoundError(f"Dataset not found at {self.data_path}")
+        """
+        Load documents from Hugging Face dataset with fallback to local JSON.
+        Prefers cached data for faster loading.
+        """
+        # Try loading from Hugging Face dataset
+        loader = HuggingFaceDatasetLoader(
+            use_cache=True,
+            fallback_path=self.data_path
+        )
+        documents_data = loader.load(prefer_cache=True)
         
-        with open(self.data_path, 'r', encoding='utf-8') as f:
-            data = json.load(f)
+        if not documents_data:
+            # If HF loading failed, try loading from local data_path
+            if os.path.exists(self.data_path):
+                print(f"Loading from local file: {self.data_path}")
+                with open(self.data_path, 'r', encoding='utf-8') as f:
+                    documents_data = json.load(f)
+            else:
+                raise FileNotFoundError(
+                    f"Could not load data from Hugging Face or local path {self.data_path}"
+                )
         
         documents = []
-        for idx, item in enumerate(data):
+        for idx, item in enumerate(documents_data):
             question = item.get("question", "")
             answer = item.get("answer", "")
             content = f"Question: {question}\n\nAnswer: {answer}"
@@ -68,7 +84,7 @@ class VectorStoreManager:
             doc = Document(
                 page_content=content,
                 metadata={
-                    "source": "maktek_qa",
+                    "source": "huggingface_customer_support_faqs",
                     "question": question,
                     "answer": answer,
                     "doc_id": str(idx)
@@ -170,7 +186,7 @@ class VectorStoreManager:
 _vector_store_manager: Optional[VectorStoreManager] = None
 
 def get_vector_store_manager(
-    data_path: str = "data/maktek_qa.json",
+    data_path: str = "data/.hf_cache/faqs.json",
     index_name: Optional[str] = None
 ) -> VectorStoreManager:
     global _vector_store_manager

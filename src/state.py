@@ -25,6 +25,10 @@ class AgentState(TypedDict):
         needs_escalation: Flag indicating if the query should be escalated
         hallucination_retry_count: Tracks retries for hallucination correction
         next_agent: The next agent to route to (for Command pattern)
+        abuse_violation: Flag indicating if abuse was detected
+        abuse_type: Type of abuse detected (profanity, harassment, spam)
+        abuse_severity: Severity level of abuse (low, medium, high, critical)
+        abuse_count: Count of abuse violations in conversation
     """
     messages: Annotated[List[BaseMessage], add_messages]
     summary: str
@@ -38,6 +42,10 @@ class AgentState(TypedDict):
     is_direct_escalation: bool
     safety_violation: bool
     safety_message: str
+    abuse_violation: bool
+    abuse_type: str
+    abuse_severity: str
+    abuse_count: int
     hallucination_retry_count: int
     next_agent: str
 
@@ -87,6 +95,10 @@ def create_initial_state(
         is_direct_escalation=False,
         safety_violation=False,
         safety_message="",
+        abuse_violation=False,
+        abuse_type="none",
+        abuse_severity="none",
+        abuse_count=0,
         hallucination_retry_count=0,
         next_agent="supervisor"
     )

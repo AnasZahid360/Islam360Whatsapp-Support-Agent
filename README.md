@@ -57,6 +57,49 @@ python main.py
 python examples/example_usage.py
 ```
 
+## RAGAS Evaluation
+
+You can evaluate your live RAG pipeline (retrieval + answer generation) using RAGAS against the running `FastAPI` backend.
+
+### 1) Prepare evaluation questions
+
+Use or edit:
+
+- `data/eval/ragas_eval_dataset.json`
+
+Required fields per item:
+
+- `question`
+- `ground_truth`
+
+Optional fields:
+
+- `user_id`
+- `thread_id`
+
+### 2) Run evaluation
+
+```bash
+python scripts/evaluate_ragas.py \
+    --dataset data/eval/ragas_eval_dataset.json \
+    --api-base http://127.0.0.1:8000 \
+    --model gpt-4o-mini
+```
+
+### 3) Output artifacts
+
+Results are written to:
+
+- `data/eval/results/ragas_results.json`
+- `data/eval/results/ragas_used_dataset.json`
+
+Current metric set includes:
+
+- `faithfulness`
+- `answer_relevancy` (or `answer_relevance`, depending on RAGAS version)
+- `context_precision`
+- `context_recall`
+
 ## Project Structure
 
 ```

@@ -1,0 +1,24 @@
+[
+  {
+    "role": "user",
+    "content": "hello",
+    "timestamp": "2026-03-26T11:47:00.022089",
+    "message_id": "t1-1774507620.022093",
+    "thread_id": "t1",
+    "user_id": "test",
+    "metadata": {
+      "config_overrides": null
+    }
+  },
+  {
+    "role": "assistant",
+    "content": "Hello. It's nice to meet you. Is there something I can help you with today?",
+    "timestamp": "2026-03-26T11:47:01.028033",
+    "message_id": "t1-1774507621.028042",
+    "thread_id": "t1",
+    "user_id": "test",
+    "metadata": {
+      "retrieved_docs_count": 0
+    }
+  }
+]

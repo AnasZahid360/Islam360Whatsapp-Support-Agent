@@ -1,0 +1,13 @@
+[
+  {
+    "role": "user",
+    "content": "Hello, this is a test message",
+    "timestamp": "2026-03-21T06:01:07.796054",
+    "message_id": "thread_456-1774054867.796084",
+    "thread_id": "thread_456",
+    "user_id": "test_user_123",
+    "metadata": {
+      "test": true
+    }
+  }
+]

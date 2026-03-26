@@ -46,6 +46,15 @@ def supervisor_node(state: AgentState) -> Command[Literal["retriever_agent", "es
     # If the last message is from the AI, the conversation turn is complete.
     # We should return to the user.
     if state["messages"] and state["messages"][-1].type == "ai":
+        # BUT: Only end if there's no pending escalation or if we're not in a loop
+        # Check if the last AI message was an escalation proposal
+        last_ai_msg = state["messages"][-1].content.lower()
+        is_escalation_proposal = "support ticket" in last_ai_msg or "human representative" in last_ai_msg
+        
+        # If it's an escalation proposal, wait for user response before ending
+        if is_escalation_proposal and state.get("escalation_status") == "proposed":
+            return Command(goto="escalator_agent")
+        
         return Command(goto="__end__")
         
     # 1. Handle explicit escalation flags
@@ -85,7 +94,12 @@ def supervisor_node(state: AgentState) -> Command[Literal["retriever_agent", "es
                 is_yes = any(re.search(rf"\b{word}\b", last_msg) for word in yes_words)
                 is_no = any(re.search(rf"\b{word}\b", last_msg) for word in no_words)
                 
-                if is_yes or is_no:
+                # Only treat as yes/no response if message is SHORT (1-3 words)
+                # If it's a longer message, treat it as a new question
+                word_count = len(last_msg.split())
+                is_short_response = word_count <= 3
+                
+                if (is_yes or is_no) and is_short_response:
                     # If AI proposed something (like a ticket or support help), go to escalator_agent
                     # We check for broader keywords to catch RAG-based support offers too.
                     prev_content = prev_msg.content.lower()

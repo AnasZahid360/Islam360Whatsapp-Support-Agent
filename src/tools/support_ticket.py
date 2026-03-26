@@ -3,6 +3,8 @@ Support ticket creation tool.
 
 This module provides the create_support_ticket tool that can be used
 by the Escalator agent to create support tickets for unresolved issues.
+
+Now integrated with persistent state manager for proper ticket tracking.
 """
 
 import json
@@ -10,10 +12,16 @@ import os
 from datetime import datetime
 from typing import Dict, Any
 from langchain_core.tools import tool
+from src.memory.persistent_state import get_persistent_state_manager
 
 
 @tool
-def create_support_ticket(issue: str, user_id: str, priority: str = "medium") -> Dict[str, Any]:
+def create_support_ticket(
+    issue: str,
+    user_id: str,
+    priority: str = "medium",
+    thread_id: str = "unknown"
+) -> Dict[str, Any]:
     """
     Create a support ticket for issues that cannot be resolved automatically.
     
@@ -21,6 +29,7 @@ def create_support_ticket(issue: str, user_id: str, priority: str = "medium") ->
         issue: Description of the customer's issue
         user_id: Unique identifier for the user
         priority: Priority level (low, medium, high, urgent)
+        thread_id: Thread ID for this conversation
     
     Returns:
         Dictionary with ticket information
@@ -29,22 +38,34 @@ def create_support_ticket(issue: str, user_id: str, priority: str = "medium") ->
     timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
     ticket_id = f"TKT-{timestamp}-{user_id[:8]}"
     
-    # Create ticket data
-    ticket = {
-        "ticket_id": ticket_id,
-        "user_id": user_id,
-        "issue": issue,
-        "priority": priority,
-        "status": "open",
-        "created_at": datetime.now().isoformat(),
-        "assigned_to": "support_team",
-        "estimated_response_time": _get_response_time(priority)
+    # Use persistent state manager
+    state_manager = get_persistent_state_manager()
+    
+    # Save ticket with persistence
+    ticket_record = state_manager.save_ticket(
+        ticket_id=ticket_id,
+        user_id=user_id,
+        thread_id=thread_id,
+        issue=issue,
+        priority=priority,
+        assigned_to="support_team",
+        metadata={
+            "estimated_response_time": _get_response_time(priority),
+            "created_from_chat": True
+        }
+    )
+    
+    # Return as dict for backward compatibility
+    return {
+        "ticket_id": ticket_record.ticket_id,
+        "user_id": ticket_record.user_id,
+        "issue": ticket_record.issue,
+        "priority": ticket_record.priority,
+        "status": ticket_record.status,
+        "created_at": ticket_record.created_at,
+        "assigned_to": ticket_record.assigned_to,
+        "estimated_response_time": ticket_record.metadata.get("estimated_response_time") if ticket_record.metadata else _get_response_time(priority)
     }
-    
-    # Save ticket to file (mock persistence)
-    _save_ticket(ticket)
-    
-    return ticket
 
 
 def _get_response_time(priority: str) -> str:
@@ -66,43 +87,63 @@ def _get_response_time(priority: str) -> str:
     return response_times.get(priority, "1-2 business days")
 
 
-def _save_ticket(ticket: Dict[str, Any]) -> None:
+def get_user_tickets(user_id: str) -> Dict[str, Any]:
     """
-    Save ticket to JSON file (mock ticket system).
+    Get all tickets for a user.
     
     Args:
-        ticket: Ticket data dictionary
+        user_id: User identifier
+    
+    Returns:
+        Dictionary with user tickets
     """
-    tickets_dir = "data/tickets"
-    os.makedirs(tickets_dir, exist_ok=True)
+    state_manager = get_persistent_state_manager()
+    tickets = state_manager.get_user_tickets(user_id)
     
-    ticket_file = os.path.join(tickets_dir, f"{ticket['ticket_id']}.json")
-    
-    with open(ticket_file, 'w', encoding='utf-8') as f:
-        json.dump(ticket, f, indent=2)
-    
-    # Also append to master log
-    log_file = os.path.join(tickets_dir, "tickets_log.jsonl")
-    with open(log_file, 'a', encoding='utf-8') as f:
-        f.write(json.dumps(ticket) + '\n')
-    
-    print(f"✓ Ticket {ticket['ticket_id']} created and saved")
+    return {
+        "user_id": user_id,
+        "total_tickets": len(tickets),
+        "tickets": [
+            {
+                "ticket_id": t.ticket_id,
+                "issue": t.issue,
+                "priority": t.priority,
+                "status": t.status,
+                "created_at": t.created_at,
+                "updated_at": t.updated_at
+            }
+            for t in tickets
+        ]
+    }
 
 
-def get_ticket_by_id(ticket_id: str) -> Dict[str, Any]:
+def get_ticket_by_id(user_id: str, ticket_id: str) -> Dict[str, Any]:
     """
     Retrieve a ticket by its ID.
     
     Args:
+        user_id: User identifier
         ticket_id: Ticket identifier
     
     Returns:
-        Ticket data or None if not found
+        Ticket data or error message
     """
-    ticket_file = f"data/tickets/{ticket_id}.json"
+    state_manager = get_persistent_state_manager()
+    ticket = state_manager.get_ticket(user_id, ticket_id)
     
-    if not os.path.exists(ticket_file):
-        return None
+    if not ticket:
+        return {"error": f"Ticket {ticket_id} not found"}
     
-    with open(ticket_file, 'r', encoding='utf-8') as f:
-        return json.load(f)
+    return {
+        "ticket_id": ticket.ticket_id,
+        "user_id": ticket.user_id,
+        "issue": ticket.issue,
+        "priority": ticket.priority,
+        "status": ticket.status,
+        "created_at": ticket.created_at,
+        "updated_at": ticket.updated_at,
+        "assigned_to": ticket.assigned_to,
+        "resolved_at": ticket.resolved_at,
+        "resolution": ticket.resolution
+    }
+

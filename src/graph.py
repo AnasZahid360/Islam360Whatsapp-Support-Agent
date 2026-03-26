@@ -16,6 +16,7 @@ from src.agents.greeting_agent import greeting_agent_node
 from src.agents.summarizer import check_and_summarize
 from src.guardrails.hallucination_check import hallucination_check_node
 from src.guardrails.input_guardrail import input_guardrail_node
+from src.guardrails.abuse_detector import abuse_detector_node
 from src.memory.memory_manager import get_memory_manager
 
 
@@ -24,8 +25,8 @@ def create_graph():
     Create and compile the Multi-Agent RAG StateGraph.
     
     Architecture:
-    START → input_guardrail → supervisor → retriever_agent → generator_agent → 
-    hallucination_check → supervisor → END
+    START → input_guardrail → abuse_detector → supervisor → retriever_agent → 
+    generator_agent → hallucination_check → supervisor → END
                     ↓
               escalator_agent → END
     
@@ -37,6 +38,7 @@ def create_graph():
     
     # Add all nodes
     graph_builder.add_node("input_guardrail", input_guardrail_node)
+    graph_builder.add_node("abuse_detector", abuse_detector_node)
     graph_builder.add_node("supervisor", supervisor_node)
     graph_builder.add_node("retriever_agent", retriever_agent_node)
     graph_builder.add_node("generator_agent", generator_agent_node)
@@ -80,6 +82,7 @@ def create_graph_with_store():
     
     # Add all nodes
     graph_builder.add_node("input_guardrail", input_guardrail_node)
+    graph_builder.add_node("abuse_detector", abuse_detector_node)
     graph_builder.add_node("supervisor", supervisor_node)
     graph_builder.add_node("retriever_agent", retriever_agent_node)
     graph_builder.add_node("generator_agent", generator_agent_node)

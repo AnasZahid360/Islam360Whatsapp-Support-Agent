@@ -1,0 +1,46 @@
+[
+  {
+    "role": "user",
+    "content": "frontend e2e smoke test",
+    "timestamp": "2026-03-25T13:35:39.574751",
+    "message_id": "ui_smoke_thread-1774427739.574758",
+    "thread_id": "ui_smoke_thread",
+    "user_id": "ui_smoke",
+    "metadata": {
+      "config_overrides": null
+    }
+  },
+  {
+    "role": "assistant",
+    "content": "I'm sorry, I'm having trouble finding a definitive answer for you. Would you like me to create a support ticket so a human representative can look into this for you?",
+    "timestamp": "2026-03-25T13:35:50.498193",
+    "message_id": "ui_smoke_thread-1774427750.498203",
+    "thread_id": "ui_smoke_thread",
+    "user_id": "ui_smoke",
+    "metadata": {
+      "retrieved_docs_count": 5
+    }
+  },
+  {
+    "role": "user",
+    "content": "short tts check",
+    "timestamp": "2026-03-25T13:37:41.654513",
+    "message_id": "ui_smoke_thread-1774427861.654519",
+    "thread_id": "ui_smoke_thread",
+    "user_id": "ui_smoke",
+    "metadata": {
+      "config_overrides": null
+    }
+  },
+  {
+    "role": "assistant",
+    "content": "I'm sorry, I'm having trouble finding a definitive answer for you. Would you like me to create a support ticket so a human representative can look into this for you?",
+    "timestamp": "2026-03-25T13:37:43.157699",
+    "message_id": "ui_smoke_thread-1774427863.157707",
+    "thread_id": "ui_smoke_thread",
+    "user_id": "ui_smoke",
+    "metadata": {
+      "retrieved_docs_count": 5
+    }
+  }
+]

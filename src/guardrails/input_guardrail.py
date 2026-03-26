@@ -12,12 +12,12 @@ from langgraph.types import Command
 from src.state import AgentState
 
 
-def input_guardrail_node(state: AgentState) -> Command[Literal["supervisor", "__end__"]]:
+def input_guardrail_node(state: AgentState) -> Command[Literal["abuse_detector", "__end__"]]:
     """
     Check the latest user message for PII or sensitive patterns.
     """
     if not state["messages"]:
-        return Command(goto="supervisor")
+        return Command(goto="abuse_detector")
         
     last_message = state["messages"][-1]
     # Handle both HumanMessage objects and strings
@@ -75,5 +75,5 @@ def input_guardrail_node(state: AgentState) -> Command[Literal["supervisor", "__
                 }
             )
             
-    # If safe, proceed to supervisor
-    return Command(goto="supervisor")
+    # If safe, proceed to abuse detector
+    return Command(goto="abuse_detector")

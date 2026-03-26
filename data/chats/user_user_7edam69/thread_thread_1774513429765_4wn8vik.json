@@ -1,0 +1,24 @@
+[
+  {
+    "role": "user",
+    "content": "assalam o alaikum how are you",
+    "timestamp": "2026-03-26T13:24:15.074189",
+    "message_id": "thread_1774513429765_4wn8vik-1774513455.074198",
+    "thread_id": "thread_1774513429765_4wn8vik",
+    "user_id": "user_7edam69",
+    "metadata": {
+      "config_overrides": null
+    }
+  },
+  {
+    "role": "assistant",
+    "content": "Wa alaikum assalam. I'm doing great, thanks for asking. It's lovely to connect with you. Is there anything I can help you with today?",
+    "timestamp": "2026-03-26T13:24:15.951837",
+    "message_id": "thread_1774513429765_4wn8vik-1774513455.951843",
+    "thread_id": "thread_1774513429765_4wn8vik",
+    "user_id": "user_7edam69",
+    "metadata": {
+      "retrieved_docs_count": 0
+    }
+  }
+]

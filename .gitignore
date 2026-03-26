@@ -50,3 +50,27 @@ logs/
 # OS
 .DS_Store
 Thumbs.db
+
+# Virtual environments
+.venv/
+.venv313/
+
+# Tickets & user data
+data/tickets/
+data/chats/
+data/eval/
+
+# Frontend build & deps
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+
+# Node
+node_modules/
+
+# RAGAS / evaluation cache
+.ragas_cache/
+data/.hf_cache/
+
+# Temp files
+/tmp/

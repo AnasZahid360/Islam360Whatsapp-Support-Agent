@@ -1,0 +1,18 @@
+[
+  {
+    "thread_id": "thread_test_123",
+    "user_id": "test_user_persistence",
+    "created_at": "2026-03-21T06:04:33.991709",
+    "last_updated": "2026-03-21T06:04:36.982014",
+    "messages": [],
+    "metadata": null
+  },
+  {
+    "thread_id": "thread_test_123",
+    "user_id": "test_user_persistence",
+    "created_at": "2026-03-21T06:04:37.999775",
+    "last_updated": "2026-03-21T06:04:37.999775",
+    "messages": [],
+    "metadata": null
+  }
+]

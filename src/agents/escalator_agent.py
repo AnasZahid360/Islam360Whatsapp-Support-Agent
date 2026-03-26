@@ -70,7 +70,8 @@ async def escalator_agent_node(state: AgentState) -> Command[Literal["__end__"]]
             ticket = create_support_ticket.invoke({
                 "issue": issue_summary,
                 "user_id": state["user_id"],
-                "priority": priority
+                "priority": priority,
+                "thread_id": state.get("thread_id", "unknown")
             })
             
             ticket_context = f"""
@@ -110,11 +111,14 @@ Generate an empathetic response acknowledging the ticket creation and providing 
                     }
                 )
             else:
-                # User declined the ticket but asked a new question. Route back to supervisor to handle the new query.
+                # User declined the ticket but asked a new question. 
+                # Route back to supervisor to handle the new query.
+                print(f"User asked a new question instead of responding to escalation proposal. Routing back to supervisor.")
                 return Command(
                     goto="supervisor",
                     update={
-                        "escalation_status": "declined"
+                        "escalation_status": "declined",
+                        "needs_escalation": False  # Reset escalation flag
                     }
                 )
     
