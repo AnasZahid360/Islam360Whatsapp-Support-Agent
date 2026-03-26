@@ -55,10 +55,12 @@ Thumbs.db
 .venv/
 .venv313/
 
-# Tickets & user data
+# Tickets & user data (runtime — do not commit)
 data/tickets/
 data/chats/
+data/sessions/
 data/eval/
+data/.hf_cache/
 
 # Frontend build & deps
 frontend/node_modules/
